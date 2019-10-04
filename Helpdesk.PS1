@@ -409,7 +409,7 @@ $lastlogon.Add_Click({
 
  
 
-    $result = Get-ADUser -Identity $username_lastlogon.text -Properties LastLogon -server dcpdc03|   Format-Table UserPrincipalName, @{Name='LastLogon';Expression={[DateTime]::FromFileTime($_.LastLogon)}} | fl | out-string;
+    $result = Get-ADUser -Identity $username_lastlogon.text -Properties LastLogon|   Format-Table UserPrincipalName, @{Name='LastLogon';Expression={[DateTime]::FromFileTime($_.LastLogon)}} | fl | out-string;
 
     $textbox_result.text = $result
 
@@ -421,7 +421,7 @@ $lastlogon.Add_Click({
 ##################s####################################### Get User Membership start
 $button_memberof.Add_Click({
 
-    $member_of = Get-ADPrincipalGroupMembership -Identity $username_lastlogon.text -server dcpdc03
+    $member_of = Get-ADPrincipalGroupMembership -Identity $username_lastlogon.text
 
     $Bindable_memberof = $member_of |  Sort-Object -Property @{Expression = {$_.GroupCategory};}, Name| Select-Object -Property @{Name='ACLName';Expression={$_.Name}} ,@{Name='Description';Expression={$_.GroupCategory }}
 
@@ -439,7 +439,7 @@ $button_backup.Add_Click({
 
     {
 
-        $member_of = Get-ADPrincipalGroupMembership -Identity $username_lastlogon.text -server dcpdc03
+        $member_of = Get-ADPrincipalGroupMembership -Identity $username_lastlogon.text
 
         $Bindable_memberof = $member_of |  Sort-Object -Property @{Expression = {$_.GroupCategory};}, Name| Select-Object -ExpandProperty Name
 
