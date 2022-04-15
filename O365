@@ -1,0 +1,80 @@
+#Modules necessary to connect to 0365#
+Install-Module -Name AzureAD
+Install-Module MSOnline
+Install-Module ExchangeOnlineManagement #For Exchange online
+
+#Import Installed Module
+Import-Module AzureAD
+Connect-AzureAD
+Connect-Msolservice
+Connect-ExchangeOnline -UserPrincipalName dhungad@5gjvrt.onmicrosoft.com
+
+
+ <#--------------------------------------------------------------------
+MS 0365 Commands Start#>
+Get-MsolUser
+Get-MsolCompanyInformation #Get Company Information
+Get-MsolUser #Get 0365 Users
+Get-Command -Module MSOnline
+Get-Command -Module MSOnline | where{$_.Name -like '*Group*'} #Filter all the commands for Group
+Get-MsolUser -All | select-object *
+New-MsolGroup -DisplayName "Finance" -Description "All Finance Staff" #Create a security group.
+
+
+<#----------------------------------------------------------------------------
+The module allows access to all existing remote PowerShell (V1) cmdlets in addition to the 9 new, faster, and more reliable cmdlets.
+
+|--------------------------------------------------------------------------|
+|    Old Cmdlets                    |    New/Reliable/Faster Cmdlets       |
+|--------------------------------------------------------------------------|
+|    Get-CASMailbox                 |    Get-EXOCASMailbox                 |
+|    Get-Mailbox                    |    Get-EXOMailbox                    |
+|    Get-MailboxFolderPermission    |    Get-EXOMailboxFolderPermission    |
+|    Get-MailboxFolderStatistics    |    Get-EXOMailboxFolderStatistics    |
+|    Get-MailboxPermission          |    Get-EXOMailboxPermission          |
+|    Get-MailboxStatistics          |    Get-EXOMailboxStatistics          |
+|    Get-MobileDeviceStatistics     |    Get-EXOMobileDeviceStatistics     |
+|    Get-Recipient                  |    Get-EXORecipient                  |
+|    Get-RecipientPermission        |    Get-EXORecipientPermission        |
+|--------------------------------------------------------------------------|
+
+To get additional information, run: Get-Help Connect-ExchangeOnline or check https://aka.ms/exops-docs
+
+Send your product improvement suggestions and feedback to exocmdletpreview@service.microsoft.com. For issues related to the module, contact Microsoft support. Don't use the feedback alias for
+ problems or support issues.
+ #>
+
+
+
+ <#--------------------------------------------------------------------
+ Azure AD Commands Start#>
+ Get-Command -Module AzureAD #Get All Azure Commands
+ Get-AzureADUser #Get All Azure Users
+ Get-AzureADUser | where{$_.displayname -like "*mir*"} | Select MailNickName
+
+<#Start Copy AD Group from one user to another #>
+
+$source_user = "PradeepG@5gjvrt.onmicrosoft.com"
+$destination_user = "MiriamG@5gjvrt.onmicrosoft.com"
+$destination_user_ID =  (Get-AzureADUser -ObjectId $destination_user).ObjectID
+
+$CopyUserObject = Get-AzureADUser -ObjectId $source_user | select JobTitle, Country, telephoneNumber, StreetAddress, City, State, PostalCode, Department, CompanyName
+Set-AzureADUser -ObjectId $destination_user -JobTitle $CopyUserObject.JobTitle
+
+
+$membership_to_copy = Get-AzureADUserMembership -ObjectId $source_user
+foreach($group in $membership_to_copy.ObjectID){
+
+    Add-AzureADGroupMember -ObjectId $group -RefObjectId $destination_user_ID
+}
+
+<# End Copy Ad Group from one user to another #>
+
+ <#--------------------------------------------------------------------
+ 0365 Exchange online Commands Start#>
+ Get-Command -Module ExchangeOnlineManagement
+ New-DistributionGroup -Name "Marketing" -DisplayName "All Marketing Staff" -Alias "All_Marketing"
+
+
+
+
